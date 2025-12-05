@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <!-- =========================
+    BLOK 1 — META / SEO
+  ========================== -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#070612" />
+  <title>pay4d — History Console</title>
+
+  <!-- =========================
+    BLOK 2 — FONTS
+  ========================== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================
+      BLOK 3 — THEME TOKENS
+    ========================== */
+    :root{
+      --bg0:#070612;
+      --bg1:#120a2d;
+      --ink:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --faint:rgba(255,255,255,.44);
+
+      --glass:rgba(255,255,255,.08);
+      --glass2:rgba(255,255,255,.10);
+      --stroke:rgba(255,255,255,.14);
+
+      --gold:#ffd36a;
+      --violet:#8e6cff;
+      --cyan:#67f2ff;
+      --green:#67ffb0;
+      --red:#ff5d6e;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --shadow2: 0 10px 30px rgba(0,0,0,.35);
+
+      --r: 22px;
+      --r2: 16px;
+
+      --ease: cubic-bezier(.2,.9,.2,1);
+      --ease2: cubic-bezier(.15,.9,.2,1);
+    }
+
+    /* =========================
+      BLOK 4 — BASE / RESET
+    ========================== */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(142,108,255,.28), transparent 55%),
+        radial-gradient(1000px 700px at 80% 20%, rgba(103,242,255,.22), transparent 55%),
+        radial-gradient(900px 700px at 60% 90%, rgba(255,211,106,.16), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    .wrap{
+      position:relative;
+      min-height:100%;
+      padding: 22px 16px 30px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    /* =========================
+      BLOK 5 — BACKDROP FX
+    ========================== */
+    canvas#fx{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      opacity:.55;
+      filter: blur(.2px);
+    }
+    .noise{
+      position:fixed; inset:0;
+      z-index:0; pointer-events:none;
+      opacity:.12;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      mix-blend-mode:overlay;
+    }
+
+    /* =========================
+      BLOK 6 — UI PRIMITIVES
+    ========================== */
+    .card{
+      position:relative;
+      z-index:1;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border: 1px solid var(--stroke);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px) saturate(170%);
+      -webkit-backdrop-filter: blur(18px) saturate(170%);
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(900px 220px at 30% 0%, rgba(255,255,255,.16), transparent 55%);
+      opacity:.75;
+      pointer-events:none;
+    }
+    .card > *{position:relative}
+    .pad{padding: 16px}
+
+    .topbar{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom: 16px;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 20px;
+      letter-spacing:-.03em;
+      line-height:1.1;
+    }
+    .brand p{
+      margin:0;
+      color:var(--muted);
+      font-size: 13px;
+      line-height:1.35;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 920px){
+      .grid{grid-template-columns: 1fr; }
+      .topbar{flex-direction:column; align-items:stretch}
+    }
+
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .spacer{flex:1}
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: var(--shadow2);
+      cursor:pointer;
+      transition: transform .15s var(--ease), background .15s var(--ease), border-color .15s var(--ease);
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.14)}
+    .btn:active{transform: translateY(0px) scale(.99)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(142,108,255,.34), rgba(103,242,255,.18));
+      border-color: rgba(142,108,255,.30);
+    }
+    .btn.danger{
+      background: linear-gradient(135deg, rgba(255,93,110,.26), rgba(255,211,106,.14));
+      border-color: rgba(255,93,110,.28);
+    }
+    .btn.ghost{background: rgba(255,255,255,.07)}
+    .btn[disabled]{opacity:.55; cursor:not-allowed; transform:none !important}
+
+    .seg{
+      display:inline-flex;
+      padding: 6px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.10);
+      gap:6px;
+    }
+    .seg button{
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      cursor:pointer;
+      transition: all .15s var(--ease);
+    }
+    .seg button.is-on{
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.14);
+      color: var(--ink);
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 220px;
+    }
+    .field label{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .input, select{
+      appearance:none;
+      width:100%;
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      color: var(--ink);
+      outline:none;
+      transition: border-color .15s var(--ease), background .15s var(--ease);
+    }
+    .input:focus, select:focus{
+      border-color: rgba(103,242,255,.45);
+      background: rgba(255,255,255,.10);
+    }
+
+    .hint{font-size:12px; color: var(--faint); line-height:1.35}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+
+    /* =========================
+      BLOK 7 — LIST / TABLE
+    ========================== */
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .item{
+      border-radius: var(--r2);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      padding: 12px;
+      display:grid;
+      grid-template-columns: 1.2fr .6fr .6fr;
+      gap: 10px;
+      align-items:center;
+      overflow:hidden;
+    }
+    .item b{font-size: 13.5px}
+    .item .sub{font-size: 12px; color: var(--muted); margin-top: 3px}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.15);
+      font-size: 12px;
+      color: var(--muted);
+      width: fit-content;
+    }
+    .dot{width:8px; height:8px; border-radius:99px; background: rgba(255,255,255,.35)}
+    .dot.ok{background: rgba(103,255,176,.75)}
+    .dot.bad{background: rgba(255,93,110,.78)}
+    .dot.warn{background: rgba(255,211,106,.78)}
+    .item .right{text-align:right}
+    .item .amt{
+      font-weight:800;
+      letter-spacing:-.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 640px){
+      .item{
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .item .right{text-align:left}
+    }
+
+    /* =========================
+      BLOK 8 — TOAST
+    ========================== */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      z-index: 50;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(15,12,35,.68);
+      backdrop-filter: blur(14px) saturate(170%);
+      -webkit-backdrop-filter: blur(14px) saturate(170%);
+      color: var(--ink);
+      font-size: 13px;
+      box-shadow: var(--shadow2);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s var(--ease), transform .18s var(--ease);
+    }
+    .toast.is-on{opacity:1; transform: translateX(-50%) translateY(-2px)}
+    .toast .tmuted{color: var(--muted)}
+    @media (prefers-reduced-motion: reduce){
+      *{transition:none !important; animation:none !important}
+      canvas#fx{display:none}
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="fx"></canvas>
+  <div class="noise" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <!-- =========================
+      BLOK 9 — TOPBAR
+    ========================== -->
+    <div class="topbar">
+      <div class="brand">
+        <h1>pay4d — History Console</h1>
+        <p>Viewer aman via <span class="mono">/api/history</span> (proxy server-side). Support mobile & desktop.</p>
+      </div>
+      <div class="row">
+        <button class="btn ghost" id="btnDemo">Demo (Dev)</button>
+        <button class="btn primary" id="btnLoad">Load History</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- =========================
+        BLOK 10 — MAIN: HISTORY
+      ========================== -->
+      <div class="card">
+        <div class="pad">
+          <div class="row" style="margin-bottom:10px">
+            <div class="seg" role="tablist" aria-label="History type">
+              <button id="tabWd" class="is-on" data-fpage="wd">Withdraw</button>
+              <button id="tabDp" data-fpage="dp">Deposit</button>
+              <button id="tabAll" data-fpage="all">All</button>
+            </div>
+            <div class="spacer"></div>
+            <div class="pill" title="Mode autentikasi (dari respon API)">
+              <span class="dot" id="authDot"></span>
+              <span id="authMode">auth: -</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Filter</label>
+              <select id="filter">
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="success">Success</option>
+                <option value="reject">Reject</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Page</label>
+              <input class="input" id="page" type="number" min="1" value="1" />
+            </div>
+
+            <div class="field" style="flex:1; min-width:260px">
+              <label>Search in results (client-side)</label>
+              <input class="input" id="q" placeholder="contoh: sukses / 100000 / tanggal / ref..." />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnPrev">← Prev</button>
+            <button class="btn" id="btnNext">Next →</button>
+            <div class="spacer"></div>
+            <button class="btn ghost" id="btnRaw">Toggle Raw</button>
+          </div>
+
+          <div class="hint" id="meta" style="margin-top:10px">Belum ada data.</div>
+
+          <div class="list" id="list"></div>
+
+          <pre id="raw"
+            class="mono"
+            style="display:none; margin-top:12px; white-space:pre-wrap; background: rgba(0,0,0,.18);
+                   border: 1px solid rgba(255,255,255,.10); padding: 12px; border-radius: 16px;
+                   max-height: 320px; overflow:auto;"></pre>
+        </div>
+      </div>
+
+      <!-- =========================
+        BLOK 11 — SIDE: TOKEN / AUTH
+      ========================== -->
+      <div class="card">
+        <div class="pad">
+          <b style="font-size:14px">Auth & Safety</b>
+          <div class="hint" style="margin-top:6px">
+            Disarankan pakai <span class="mono">Authorization: Bearer</span> token user (JWT).  
+            Token disimpan di <span class="mono">localStorage</span> untuk demo. Untuk produksi, sesuaikan dengan sistem login pay4d kamu.
+          </div>
+
+          <div class="field" style="margin-top:12px">
+            <label>Bearer Token (opsional)</label>
+            <input class="input mono" id="token" placeholder="paste token di sini (opsional)" />
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="btnSaveToken">Save Token</button>
+              <button class="btn danger" id="btnClearToken">Clear</button>
+            </div>
+            <div class="hint" style="margin-top:8px">
+              Kalau kamu pakai mode dev: set env <span class="mono">ALLOW_DEV_BYPASS=1</span> + <span class="mono">DEV_USERNAME</span> di Vercel.
+            </div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid rgba(255,255,255,.10); margin:14px 0">
+
+          <b style="font-size:14px">Event (UI Demo)</b>
+          <div class="hint" style="margin-top:6px">
+            Ini contoh cara “nyambung” ke logic event: kamu bisa hitung poin dari history (sementara).
+            Idealnya: event progress dihitung di server, bukan client.
+          </div>
+
+          <div class="row" style="margin-top:12px">
+            <div class="pill"><span class="dot ok"></span><span>Total Items: <b id="totalItems">0</b></span></div>
+            <div class="pill"><span class="dot warn"></span><span>Estimated XP: <b id="xp">0</b></span></div>
+            <div class="pill"><span class="dot"></span><span>Tokens: <b id="tokens">0</b></span></div>
+          </div>
+
+          <div class="hint" style="margin-top:10px">
+            Formula demo: <span class="mono">XP = items * 7</span>, token tiap 10 item.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* =========================
+      BLOK 12 — FX BACKGROUND
+    ========================== */
+    (function(){
+      const c = document.getElementById('fx');
+      const ctx = c.getContext('2d', { alpha: true });
+      let w=0,h=0,dpr=Math.min(2, window.devicePixelRatio || 1);
+      const balls = [];
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function resize(){
+        w = window.innerWidth; h = window.innerHeight;
+        c.width = Math.floor(w*dpr);
+        c.height = Math.floor(h*dpr);
+        c.style.width = w+'px';
+        c.style.height = h+'px';
+      }
+      window.addEventListener('resize', resize, {passive:true});
+      resize();
+
+      if (reduce) return;
+
+      const N = Math.round(Math.sqrt(w*h) / 55);
+      for(let i=0;i<N;i++){
+        balls.push({
+          x: Math.random()*w,
+          y: Math.random()*h,
+          r: 40 + Math.random()*110,
+          vx: (Math.random()-.5)*0.25,
+          vy: (Math.random()-.5)*0.25,
+          a: .06 + Math.random()*.09
+        });
+      }
+
+      function tick(){
+        ctx.clearRect(0,0,c.width,c.height);
+        ctx.save();
+        ctx.scale(dpr,dpr);
+
+        for(const b of balls){
+          b.x += b.vx; b.y += b.vy;
+          if(b.x < -200) b.x = w+200;
+          if(b.x > w+200) b.x = -200;
+          if(b.y < -200) b.y = h+200;
+          if(b.y > h+200) b.y = -200;
+
+          const g = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
+          g.addColorStop(0, `rgba(142,108,255,${b.a})`);
+          g.addColorStop(.55, `rgba(103,242,255,${b.a*.72})`);
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+
+    /* =========================
+      BLOK 13 — HELPERS
+    ========================== */
+    const $ = (s, el=document) => el.querySelector(s);
+
+    function toast(msg, sub=""){
+      const t = $("#toast");
+      t.innerHTML = sub ? `${msg} <span class="tmuted">${sub}</span>` : msg;
+      t.classList.add("is-on");
+      clearTimeout(toast._tm);
+      toast._tm = setTimeout(()=>t.classList.remove("is-on"), 2400);
+    }
+
+    function fmtAmount(x){
+      if (x == null) return "-";
+      const n = Number(String(x).replace(/[^\d.-]/g,""));
+      if (!Number.isFinite(n)) return String(x);
+      return n.toLocaleString("id-ID");
+    }
+
+    function statusDot(status){
+      const s = (status||"").toLowerCase();
+      if (s.includes("succ") || s.includes("berhasil") || s.includes("ok")) return "ok";
+      if (s.includes("rej") || s.includes("fail") || s.includes("gagal")) return "bad";
+      if (s.includes("pend") || s.includes("proses") || s.includes("wait")) return "warn";
+      return "";
+    }
+
+    function safeText(x){
+      return (x==null) ? "" : String(x);
+    }
+
+    /* =========================
+      BLOK 14 — STATE
+    ========================== */
+    const state = {
+      fpage: "wd",
+      filter: "all",
+      source: "withdraw",
+      page: 1,
+      showRaw: false,
+      last: null,
+    };
+
+    const tokenKey = "pay4d_bearer_token_v1";
+    $("#token").value = localStorage.getItem(tokenKey) || "";
+
+    function setTab(fp){
+      state.fpage = fp;
+      $("#tabWd").classList.toggle("is-on", fp==="wd");
+      $("#tabDp").classList.toggle("is-on", fp==="dp");
+      $("#tabAll").classList.toggle("is-on", fp==="all");
+    }
+
+    /* =========================
+      BLOK 15 — API CALL
+    ========================== */
+    async function loadHistory(){
+      state.filter = $("#filter").value;
+      state.page = Math.max(1, Number($("#page").value || 1) || 1);
+
+      // source default by fpage
+      state.source =
+        state.fpage === "wd" ? "withdraw" :
+        state.fpage === "dp" ? "deposit" : "all";
+
+      $("#meta").textContent = "Loading...";
+      $("#list").innerHTML = "";
+      $("#raw").style.display = "none";
+
+      const token = ($("#token").value || "").trim();
+      const headers = { "content-type":"application/json" };
+      if (token) headers["authorization"] = "Bearer " + token;
+
+      let res, data;
+      try{
+        res = await fetch("/api/history", {
+          method:"POST",
+          headers,
+          body: JSON.stringify({
+            fpage: state.fpage,
+            filter: state.filter,
+            page: state.page,
+            source: state.source
+          })
+        });
+        data = await res.json();
+      }catch(e){
+        $("#meta").textContent = "Gagal konek API.";
+        toast("Error", "cek /api/history");
+        return;
+      }
+
+      state.last = data;
+
+      // auth indicator
+      const ok = !!data?.ok;
+      $("#authMode").textContent = data?.user ? `auth: ${data.user.authMode}` : "auth: -";
+      $("#authDot").className = "dot " + (ok ? "ok" : "bad");
+
+      // raw toggle
+      const raw = data?.normalized?.raw;
+      $("#raw").textContent = typeof raw === "string" ? raw : JSON.stringify(raw, null, 2);
+
+      const items = Array.isArray(data?.normalized?.items) ? data.normalized.items : [];
+      const q = ($("#q").value || "").trim().toLowerCase();
+
+      const filtered = !q ? items : items.filter(it => {
+        const blob = JSON.stringify(it).toLowerCase();
+        return blob.includes(q);
+      });
+
+      // meta
+      const u = data?.user?.username ? `@${data.user.username}` : "(user unknown)";
+      $("#meta").textContent =
+        `${ok ? "OK" : "NOT OK"} • ${u} • fpage=${state.fpage} • filter=${state.filter} • page=${state.page} • items=${filtered.length}`;
+
+      // render
+      if (!filtered.length){
+        $("#list").innerHTML = "";
+        toast(ok ? "Tidak ada data" : "Upstream error", ok ? "" : `status ${res.status}`);
+      } else {
+        renderList(filtered);
+      }
+
+      // event demo calc
+      $("#totalItems").textContent = String(filtered.length);
+      const xp = filtered.length * 7;
+      const tokens = Math.floor(filtered.length / 10);
+      $("#xp").textContent = String(xp);
+      $("#tokens").textContent = String(tokens);
+    }
+
+    function renderList(items){
+      const list = $("#list");
+      list.innerHTML = "";
+
+      for (const it of items){
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const left = document.createElement("div");
+        const title = document.createElement("b");
+        title.textContent = safeText(it.type || state.fpage || "history");
+        const sub = document.createElement("div");
+        sub.className = "sub";
+        sub.textContent = safeText(it.createdAt || "-");
+        left.appendChild(title);
+        left.appendChild(sub);
+
+        const mid = document.createElement("div");
+        const pill = document.createElement("div");
+        pill.className = "pill";
+        const dot = document.createElement("span");
+        dot.className = "dot " + statusDot(it.status);
+        const st = document.createElement("span");
+        st.textContent = safeText(it.status || "unknown");
+        pill.appendChild(dot);
+        pill.appendChild(st);
+        mid.appendChild(pill);
+
+        const right = document.createElement("div");
+        right.className = "right";
+        const amt = document.createElement("div");
+        amt.className = "amt";
+        amt.textContent = fmtAmount(it.amount);
+        const rid = document.createElement("div");
+        rid.className = "sub mono";
+        rid.textContent = it.id ? `id: ${safeText(it.id)}` : "";
+        right.appendChild(amt);
+        right.appendChild(rid);
+
+        div.appendChild(left);
+        div.appendChild(mid);
+        div.appendChild(right);
+
+        list.appendChild(div);
+      }
+    }
+
+    /* =========================
+      BLOK 16 — EVENTS
+    ========================== */
+    $("#tabWd").addEventListener("click", () => { setTab("wd"); toast("Tab", "Withdraw"); });
+    $("#tabDp").addEventListener("click", () => { setTab("dp"); toast("Tab", "Deposit"); });
+    $("#tabAll").addEventListener("click", () => { setTab("all"); toast("Tab", "All"); });
+
+    $("#btnLoad").addEventListener("click", loadHistory);
+    $("#btnPrev").addEventListener("click", () => {
+      const p = Math.max(1, Number($("#page").value || 1) - 1);
+      $("#page").value = String(p);
+      loadHistory();
+    });
+    $("#btnNext").addEventListener("click", () => {
+      const p = Math.max(1, Number($("#page").value || 1) + 1);
+      $("#page").value = String(p);
+      loadHistory();
+    });
+
+    $("#btnRaw").addEventListener("click", () => {
+      state.showRaw = !state.showRaw;
+      $("#raw").style.display = state.showRaw ? "block" : "none";
+      toast("Raw", state.showRaw ? "ON" : "OFF");
+    });
+
+    $("#q").addEventListener("input", () => {
+      if (!state.last) return;
+      // re-render cepat dari cached
+      const items = Array.isArray(state.last?.normalized?.items) ? state.last.normalized.items : [];
+      const q = ($("#q").value || "").trim().toLowerCase();
+      const filtered = !q ? items : items.filter(it => JSON.stringify(it).toLowerCase().includes(q));
+      $("#meta").textContent =
+        `${state.last?.ok ? "OK" : "NOT OK"} • @${state.last?.user?.username||"-"} • page=${$("#page").value} • items=${filtered.length}`;
+      renderList(filtered);
+      $("#totalItems").textContent = String(filtered.length);
+      $("#xp").textContent = String(filtered.length * 7);
+      $("#tokens").textContent = String(Math.floor(filtered.length / 10));
+    });
+
+    $("#btnSaveToken").addEventListener("click", () => {
+      localStorage.setItem(tokenKey, ($("#token").value || "").trim());
+      toast("Token saved");
+    });
+    $("#btnClearToken").addEventListener("click", () => {
+      localStorage.removeItem(tokenKey);
+      $("#token").value = "";
+      toast("Token cleared");
+    });
+
+    $("#btnDemo").addEventListener("click", async () => {
+      toast("Demo", "load page 1");
+      $("#page").value = "1";
+      await loadHistory();
+    });
+
+    // initial
+    setTab("wd");
+  </script>
+</body>
+</html>
